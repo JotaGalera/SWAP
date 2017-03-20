@@ -1,0 +1,30 @@
+Maquina Virtual 1:
+
+root@ubuntu:/home/jota# apache2 -u
+Server version: Apache/2.4.28 (Ubuntu)
+Server built:   2016-07-14T12:32:26
+root@ubuntu:/home/jota# ps aux | grep apache
+root	  21209  0.0  3.0 325532 30260 ?	Ss	11:43  0:00 /usr/sbin/apache2 -k start	 
+www-data  25723  0.0  0.9 325556  9084 ?	S	11:52  0:00 /usr/sbin/apache2 -k start
+www-data  25724  0.0  0.9 325556  9084 ?	S	11:52  0:00 /usr/sbin/apache2 -k start
+www-data  25725  0.0  0.9 325556  9084 ?	S	11:52  0:00 /usr/sbin/apache2 -k start
+www-data  25726  0.0  0.9 325556  9084 ?	S	11:52  0:00 /usr/sbin/apache2 -k start
+www-data  25727  0.0  0.9 325556  9084 ?	S	11:52  0:00 /usr/sbin/apache2 -k start
+root	  26632  0.0  0.1  14224  1032 tty1	S+	11:59  0:00 grep --color=auto apache
+root@ubuntu:/home/jota#
+
+
+Maquina Virtual 2:
+
+root@ubuntu:/home/jota# apache2 -u
+Server version: Apache/2.4.28 (Ubuntu)
+Server built:   2016-07-14T12:32:26
+root@ubuntu:/home/jota# ps aux | grep apache
+root	  19644  0.0  3.0 325532 30316 ?	Ss	11:44  0:00 /usr/sbin/apache2 -k start	 
+www-data  23564  0.0  0.8 325556  8848 ?	S	11:51  0:00 /usr/sbin/apache2 -k start
+www-data  23565  0.0  0.8 325556  8848 ?	S	11:51  0:00 /usr/sbin/apache2 -k start
+www-data  23566  0.0  0.8 325556  8848 ?	S	11:51  0:00 /usr/sbin/apache2 -k start
+www-data  23571  0.0  0.8 325556  8848 ?	S	11:51  0:00 /usr/sbin/apache2 -k start
+www-data  23572  0.0  0.8 325556  8848 ?	S	11:51  0:00 /usr/sbin/apache2 -k start
+root	  24420  0.0  0.1  14224  1092 tty1	S+	11:59  0:00 grep --color=auto apache
+root@ubuntu:/home/jota#
