@@ -1,0 +1,95 @@
+Practica 2:
+
+Los objetivos concretos de esta segunda práctica son:
+
+	·Probar el funcionamiento de la copia de archivos por SSH
+
+	·Clonar una carpeta entre las dos máquinas
+	
+	·Configurar el ssh para acceder a máquinas remotas sin contraseña
+
+	·Establecer  una  tarea  en  cron  que  se ejecute  cada  hora  para  mantener 
+	 actualizado el contenido del directorio /var/www entre las dos máquinas
+
+
+
+Damos por hecho que hemos seguido todos los pasos del guion previo a realizar la practica.
+Por tanto, rsync está instalado, los distintos permisos ,en los directorios, están dados.
+
+	1.Empezando por realizar una copia de un archivo mediante ssh de una máquina a otra.
+
+		·En primer lugar creamos un fichero "PruebaPractica2" en una máquina, en mi caso
+		 usaré la máquina 1(la principal) para contener el fichero origen.
+
+		·Una vez realizado lo anterior, en la otra máquina(para mi la secundaria, "Maquina 2")
+		 introducimos el comando "ssh 172.16.57.128 cat PruebaPractica2 > PruebaNuevaPractica2"
+		 Y podemos comprobar como dicho archivo esta copiado en nuestra máquina secundaria.
+		 
+		**NOTA: A tener en cuenta, la IP: 172.16.57.128 es la de mi maquina principal.
+						El nombre "PruebaNuevaPractica2" del archivo, puede ser cualquiera 
+						puesto que la maquina lo crea automaticamente si no existe.
+
+	2.Clonar contenido entre máquinas utilizando rsync, 
+	
+		·Para ello hemos creado en el directorio /home/jota de la primera máquina(Máquina 1)
+		 2 archivos de texto "Mytest" y "otraDeMisPruebas".
+
+		·Utilizando el comando rsync -avz -e ssh 172.16.57.128:/home/jota/ /home/jota/ en la 
+		 segunda máquina obtenemos como resultado ambos archivos en ella.
+
+	3.Configurar el ssh para acceder a máquinas remotas sin contraseña.
+
+		·Realizamos en la segunda máquina(NO princial) el comando "ssh-keygen -b 4096 -t rsa"
+		 de esta manera generamos un archivo que actuará como clave para nuestra máquina principal.
+
+		·Para pasar el archivo a la primera máquina basta con introducir "ssh-copy-id 172.16.57.129".
+
+		·Ahora en la máquina 1 mediante el comando "ssh 172.16.57.129" podemos acceder a nuestra 
+		 maquina secundaria.
+
+		**NOTA: la realización del ejercicio se puede hacer con la maquina secundaria, para poder
+		 acceder a la maquina principal también.
+		***NOTA: en mis máquina he tenido que usar el comando "chmod 600 ~/.ssh/authorized_keys"
+		 para que hiciera efecto y no nos pidieran la contraseña al usar "ssh MaquinaIP"
+
+	4.Para establecer la tarea modificaremos el archivo crontab que se encuentra en la ruta /etc.
+
+		·Copiaré el contenido del archivo para después añadirle la nueva línea:
+
+		# /etc/crontab: system-wide crontab
+		# Unlike any other crontab you don't have to run the `crontab'
+		# command to install the new version when you edit this file
+		# and files in /etc/cron.d. These files also have username fields,
+		# that none of the other crontabs do.
+
+		SHELL=/bin/sh
+		PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+		# m h dom mon dow user	command
+		17 *	* * *	root    cd / && run-parts --report /etc/cron.hourly
+		25 6	* * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )
+		47 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
+		52 6	1 * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
+		
+		·Utilizando el comando crontab -e , nos permite elegir un editor que tengamos instalado en nuestra
+		 maquina para modificar el archivo. En mi caso tengo instalado el editor "vim" , basta con escribir
+		 "sudo apt-get install vim" para tenerlo correctamente instalado en nuestra distribución.
+		 Una vez dentro del archivo escribimos en él:
+
+		* 0,2,4,6,8,10,12,14,16,18,20,22 * * * rsync -avz -e ssh 172.16.57.128:/var/www /var/www (Máquina 2)
+		
+		hay que realizarlo en ambas máquinas para que ambas estén actualizada la una con la otra		
+
+		* 0,2,4,6,8,10,12,14,16,18,20,22 * * * rsync -avz -e ssh 172.16.57.129:/var/www /var/www (Máquina 1)
+		
+		Segun fuentes( https://es.wikipedia.org/wiki/Cron_(Unix) ) Para especificar dos o más valores en cada 
+		variable, estas deben estar separadas por comas.
+
+		**NOTA: si queremos excluir algun directorio basta con añadir algo asi: 
+			rsync -avz --exclude="directorioQueNoQueramos" -e ssh 172.16.57.129:/var/www /var/www
+		
+
+
+
+
+
