@@ -1,0 +1,54 @@
+1.Instalar un certificado SSL autofirmado para configurar el acceso HTTPS a los servidores.
+
+Para ello como root en nuestra terminal escribimos:
+
+a2enmod ssl
+service apache2 restart
+mkdir /etc/apache2/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/apache.key -out /etc/apache2/ssl/apache.crt
+
+Nos pedira una serie de datos a introducir:
+
+State or Provinces Name: Granada
+Locality Name: Granada
+Organization Name: swap
+Organizational unit name: swap
+Common Name: swap
+Email Addres: javigalera@correo.ugr.es (en mi caso)
+
+Ahora necesitamos editar nuestra configuracion default-ssl:
+
+nano /etc/apache2/sites-available/defaul-ssl
+
+-->SSLCertificateFile /etc/apache2/ssl/apache.crt
+-->SSLCertificateKeyFile /etc/apache2/ssl/apache.keyssl
+
+LO ACTIVAMOS: 
+
+a2ensite default-ssl
+service apache2 reload
+
+YA TENEMOS NUESTRO PROTOCOLO HTTPS CON FIRMA PROPIA.
+
+2.Configurar las reglas del cortafuegos con IPTABLES para asegurar el acceso a
+los servidores web, permitiendo el acceso por los puertos de HTTP y HTTPS.
+Esta configuración la vamos a hacer en una de las máquinas servidoras finales
+(p.ej. en la M1). Se debe poner en un script que se ejecute en el arranque del
+sistema (poner que se ejecute el script con las reglas del cortafuegos en el
+archivo /etc/rc.local).
+
+Para ello abrimos los puertos HTTP/HTTPS (80 y 443):
+¡¡¡¡PARA EJECUTARLO COMO SCRIPT!!! guardamos en un archivo por ejemplo: myscript.sh
+
+#!/bin/sh
+
+iptables -A INPUT -i eth0 -p tcp -m multiport --dports 80,443
+-m state --state NEW,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -o eth0 -p tcp -m multiport --sports 80,443
+-m state --state ESTABLISHED -j ACCEPT
+
+y en el crontab en la ultima linea agregamos:
+
+@reboot root /home/jota/myscript.sh //LA RUTA VARIARA EN FUNCIÓN DE DONDE TENGAS TU SCRIPT
+
+ 
