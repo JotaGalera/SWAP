@@ -1,1 +1,86 @@
+			Practica 5
+
+En esta practica realizaremos las siguientes tareas:
+
+1.Crear una BD con al menos una tabla y algunos datos.
+
+Para ello requerimos de una maquina virtual con mySQL.
+En la terminal escribimos:
+
+mysql -u root -p (nos pedira nuestro password)
+
+Para comprobar si estamos dentro en la linea en la que escribimos aparace algo asi:
+
+mysql>
+
+ahí escribimos:
+
+mysql>create database contactos;
+mysql>use contactos;
+mysql>create table datos(nombre varchar(100),tlf int);
+mysql>insert into datos(nombre,tlf) values ("rafa",958958958);
+mysql>select * from datos;
+
+//NOS MOSTRARA LA TABLA DATOS, EN ELLA(si hemos seguido bien los pasos) OBTENEMOS A RAFA
+CON SU NUMERO DE TELEFONO
+
+2.Realizar la copia de seguridad de la BD completa usando mysqldump.
+
+PARA DIFERENCIAR DE LA MAQUINA 1 Y LA 2 AÑADIRE JUSTO DELANTE DE "mysql>" 1 O 2 EN FUNCION
+DE LA MAQUINA A LA QUE NOS REFIRAMOS.
+
+De nuevo dentro de mysql: mysql -u root -p
+
+
+1 mysql>FLUSH TABLES WITH READ LOCK;
+1 mysql>quit
+
+mysqldump mydb -u root -p > /tmp/ejemplo.sql //en la maquina 1
+
+1 mysql> UNLOCK TABLES;
+1 mysql> quit
+
+3.Restaurar dicha copia en la segunda máquina (clonando manual de la BD)
+
+scp 172.16.155.129:/tmp/mydb.sql /tmp/ //en la maquina 2
+
+2 mysql>CREATE DATABASE 'mydb';
+2 mysql>quit
+
+mysql -u root -p mydb < /tmp/mydb.sql 
+
+4.Realizar la configuración maestro-esclavo de los servidores mySQL para que la replicación de datos se realice automáticamente
+
+Lo primero que haremos será la configuración del maestro, en /etc/mysql/mysql.conf.d/mysqld.cnf:
+
+·Comentamos el bin-addres tal que: #bin-addres 127.0.0.1
+·Indicar el archivo donde almacenar el log de errores: log_error = /var/log/mysql/error.log
+·Establecemos el identificador del servidor: server-id = 1
+·Comprobamos el registro binario: log_bin = /var/log/mysql/bin.log
+
+Guardamos el documento y reiniciamos el servicio:
+
+/etc/init.d/mysql restart
+
+Si no hay ningún error entramos de nuevo la máquina maestro:
+
+1 mysql> CREATE USER esclavo IDENTIFIED BY 'esclavo';
+1 mysql> GRANT REPLICATION SLAVE ON *.* TO 'esclavo'@'%' IDENTIFIED BY 'esclavo';
+1 mysql> FLUSH PRIVILEGES;
+1 mysql> FLUSH TABLES;
+1 mysql> FLUSH TABLES WITH READ LOCK;
+
+MOSTRAMOS POR PANTALLA LA CONFIGURACIÓN DEL MAESTRO , LA NECESITAREMOS EN EL SIGUIENTE PASO:
+
+1 mysql> SHOW MASTER STATUS;
+
+EN LA MAQUINA ESCLAVA MODIFICAREMOS:
+
+2 mysql> CHANGE MASTER TO MASTER_HOST='172.16.155.129'; //LA IP DE LA MAQUINA MAESTRA
+2 mysql> MASTER_USER= 'esclavo',MASTER_PASSWORD='esclavo',
+		MASTER_LOG_FILE='//archivo que nos dama la configuración del maestro//',
+		MASTER_LOG_POS='//posición del maestro//',MASTER_PORT=3306;
+2 mysql> START SLAVE;
+
+DE NUEVO EN LA MAQUINA 1
 
