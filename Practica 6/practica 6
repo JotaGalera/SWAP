@@ -1,0 +1,51 @@
+		                                          Practica 6
+En esta práctica realizaremos 2 tareas:
+
+1. Realizaremos la configuración de dos discos en RAID 1 bajo Ubuntu, automatizando el montaje del
+dispositivo creado al inicio del sistema.
+
+Partimos de una maquina virtual ya instalada y configurada, añadimos (en estado apagado) dos discos
+del mismo tipo y capacidad.
+
+Ahora arrancamos las maquina e instalamos el paquete para configurar RAID:
+
+sudo apt-get install mdadm
+
+En el sistema utilizamos el comando:
+
+sudo fdisk -l // para buscar la información de ambos discos
+
+Creamos el RAID 1, usando el dispositivo /dev/md0, y le indicamos el numero de dispositivos y su
+ubicación mediante:
+
+sudo mdadm -C /dev/md0 --level=raid1 --raid-devices=2 /dev/sdb /deb/sdc
+
+Nuestro dispositivo se habra creado con el nombre de /dev/md0 momentaneamente, puesto que en cuanto
+reiniciemos la maquina sustituira dicho nobmre por: /dev/md127
+
+Para automatizar el proceso configuramos el archivo del sistema /etc/fstab, al final anotaremos
+la UUID del dispositivo.
+
+UUID="codigo del dispositivo" /dat ext2 defaults 0 0
+
+Para obtener el UUID del dispositivo introducimos el comando:
+
+ls -l /dev/disk/by-uuid/
+
+Ya tenemos automatizado el montaje del dispositivo.
+
+2.Simular un fallo en uno de los discos del RAID(mediante comandos con el mdadm), retirarlo 
+"en caliente", comprobar que se puede acceder a la información que hay almacenada en el RAID, 
+y por último, añadirlo al conjunto y comprobar que se reconstruye correctamente.
+
+Para simular el error en alguno de los discos escribimos:
+
+sudo mdadm --manage --set-faulty /dev/md0 /dev/sdx --> siendo x=c | b;
+
+Retiramos en caliente el disco que marca como fallado así:
+
+sudo mdadm --manage --remove /dev/md0 /dev/sdx --> de nuevo, siendo x= c | b; en función de lo elegido
+
+Para finalizar añadimos en caliente , también, un nuevo disco que reemplazaría al anterior:
+
+sudo mdadm --manage --add /dev/md0 /dev/sdx --> de nuevo, siendo x= c | b; en función de lo elegido
