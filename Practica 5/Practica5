@@ -84,3 +84,10 @@ EN LA MAQUINA ESCLAVA MODIFICAREMOS:
 
 DE NUEVO EN LA MAQUINA 1
 
+1 mysql> UNLOCK TABLES;
+1 mysql> SHOW SLAVE STATUS\G
+
+Revisamos que el parametro "Second_Behind_Master" es distinto de "null" y todo será correcto. Ya tenemos nuestras máquinas Maestro-Esclavo.
+
+
+ 
